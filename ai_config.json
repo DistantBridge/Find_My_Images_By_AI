@@ -1,0 +1,24 @@
+{
+    "server": {
+        "base_url": "http://对应的IP地址/v1",
+        "api_key": "lm-studio"
+    },
+    "models": {
+        "image_description": "llava-v1.5-7b",
+        "translation": "deepseek-r1-distill-qwen-14b"
+    },
+    "parameters": {
+        "image_description": {
+            "temperature": 0.7
+        },
+        "translation": {
+            "temperature": 0.3,
+            "max_tokens": -1,
+            "stream": false
+        }
+    },
+    "prompts": {
+        "image_description": "Please describe in detail the content of this picture, including the scene, objects, colors, people and possible time frame, etc. information.",
+        "translation_system": "你是一个专业的翻译助手，擅长将文本从一种语言翻译到另一种语言，同时保持原文的含义、风格和细节。"
+    }
+}

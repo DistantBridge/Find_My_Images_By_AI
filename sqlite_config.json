@@ -1,0 +1,7 @@
+{
+    "database_path": "盘符:/需要的路径/image_database.db",
+    "auto_create": true,
+    "backup_enabled": true,
+    "backup_interval_days": 7,
+    "max_backup_files": 5
+}

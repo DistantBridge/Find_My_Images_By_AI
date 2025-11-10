@@ -1,0 +1,24 @@
+name: ai-assist-image-description
+channels:
+  - pytorch
+  - nvidia
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.10
+  - pip
+  # GPU 版 PyTorch（自带 CUDA 12.1 运行时）
+  - pytorch
+  - torchvision
+  - torchaudio
+  - pytorch-cuda=12.1
+  # 基础科学与图像
+  - numpy
+  - pillow
+  - pip:
+      - easyocr
+      - opencv-python-headless
+      - PyQt6
+      - mysql-connector-python
+      - piexif
+      - openai
