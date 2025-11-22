@@ -105,9 +105,13 @@ class ConfigLoader:
                     image_name TEXT,
                     folder_short_name TEXT,
                     ocr_text TEXT,
+                    md5 TEXT,
+                    sha256 TEXT,
+                    alternate_paths TEXT,
                     ai_description_en TEXT,
                     ai_description_zh TEXT,
                     original_image_path TEXT,
+                    remark TEXT,
                     processed_time TEXT,
                         is_processed BOOLEAN DEFAULT 0,
                         is_featured BOOLEAN DEFAULT 0,
@@ -131,6 +135,7 @@ class ConfigLoader:
             """)
             
             conn.commit()
+            cursor.close()
             # 创建标签表和映射表（多对多）
             conn = sqlite3.connect(db_path)
             cursor = conn.cursor()
@@ -154,6 +159,34 @@ class ConfigLoader:
             conn.close()
             conn.close()
             print(f"数据库文件已创建: {db_path}")
+        else:
+            # 如果数据库已存在，确保 image_records 表包含需要的列（向后兼容）
+            try:
+                conn = sqlite3.connect(db_path)
+                cursor = conn.cursor()
+                cursor.execute("PRAGMA table_info(image_records)")
+                cols = [r[1] for r in cursor.fetchall()]
+                # 新增列：remark, md5, sha256, alternate_paths
+                if 'remark' not in cols:
+                    cursor.execute("ALTER TABLE image_records ADD COLUMN remark TEXT")
+                if 'md5' not in cols:
+                    cursor.execute("ALTER TABLE image_records ADD COLUMN md5 TEXT")
+                if 'sha256' not in cols:
+                    cursor.execute("ALTER TABLE image_records ADD COLUMN sha256 TEXT")
+                if 'alternate_paths' not in cols:
+                    cursor.execute("ALTER TABLE image_records ADD COLUMN alternate_paths TEXT")
+                conn.commit()
+                # 尝试创建唯一索引以加速按哈希查找（若已存在则忽略）
+                try:
+                    cursor.execute("CREATE INDEX IF NOT EXISTS idx_image_hashes ON image_records(md5, sha256)")
+                    conn.commit()
+                except Exception:
+                    pass
+                cursor.close()
+                conn.close()
+            except Exception:
+                # 忽略迁移错误，但打印以便调试
+                print("检查/迁移 image_records 表时出错（可忽略）")
         
         return db_path
     

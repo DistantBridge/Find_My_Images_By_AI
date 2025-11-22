@@ -1,10 +1,10 @@
 {
     "server": {
-        "base_url": "http://对应的IP地址/v1",
+        "base_url": "http://192.168.56.1:7272/v1",
         "api_key": "lm-studio"
     },
     "models": {
-        "image_description": "llava-v1.5-7b",
+        "image_description": "qwen/qwen3-vl-30b",
         "translation": "deepseek-r1-distill-qwen-14b"
     },
     "parameters": {
@@ -13,12 +13,12 @@
         },
         "translation": {
             "temperature": 0.3,
-            "max_tokens": -1,
+            "max_tokens": 1024,
             "stream": false
         }
     },
     "prompts": {
-        "image_description": "Please describe in detail the content of this picture, including the scene, objects, colors, people and possible time frame, etc. information.",
+        "image_description": "请用中文详细描述这张图片的内容，包括场景、物体、颜色、人物、动作、可能的时间段以及任何能帮助理解图片的细节。只用中文回答，保持自然、连贯并尽量详细。",
         "translation_system": "你是一个专业的翻译助手，擅长将文本从一种语言翻译到另一种语言，同时保持原文的含义、风格和细节。"
     }
 }
