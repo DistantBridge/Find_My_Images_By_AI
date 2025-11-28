@@ -1,4 +1,63 @@
 {
+    "selected_scheme": "4",
+    "schemes": {
+        "1": {
+            "key": "old_en_then_translate",
+            "name": "旧方案：英文生成 + 翻译 (old)",
+            "description": "先生成英文描述，再用翻译模型翻译为中文（英文保存到 ai_description_en，中文保存到 ai_description_zh）",
+            "prompt_language": "en",
+            "uses_translation": true,
+            "models": {
+                "image_description": "llava-v1.5-7b",
+                "translation": "deepseek-r1-distill-qwen-14b"
+            },
+            "parameters": {
+                "image_description": {
+                    "temperature": 0.7
+                },
+                "translation": {
+                    "temperature": 0.3,
+                    "max_tokens": -1,
+                    "stream": false
+                }
+            },
+            "prompts": {
+                "image_description": "Please describe in detail the content of this picture, including the scene, objects, colors, people and possible time frame, etc. information.",
+                "translation_system": "你是一个专业的翻译助手，擅长将文本从一种语言翻译到另一种语言，同时保持原文的含义、风格和细节。"
+            }
+        },
+        "2": {
+            "key": "en_only",
+            "name": "仅英文 (en_only)",
+            "description": "只生成英文描述（保存到 ai_description_en）",
+            "prompt_language": "en",
+            "uses_translation": false
+        },
+        "3": {
+            "key": "qwen30b_vl",
+            "name": "直接中文 (qwen30b-vl)",
+            "description": "新版多模态直接生成中文描述（保存到 ai_description_zh_v2）",
+            "prompt_language": "zh",
+            "uses_translation": false
+        },
+        "4": {
+            "key": "qwen32b_vl_thinking",
+            "name": "中文直出 (qwen3-vl-32b-thinking)",
+            "description": "使用 qwen3-vl-32b-thinking 直接生成中文描述，存入 ai_description_zh_thinking",
+            "prompt_language": "zh",
+            "uses_translation": false,
+            "models": {
+                "image_description": "qwen3-vl-32b-thinking"
+            },
+            "parameters": {
+                "image_description": {
+                    "temperature": 0.7,
+                    "max_tokens": -1,
+                    "stream": false
+                }
+            }
+        }
+    },
     "server": {
         "base_url": "http://192.168.56.1:7272/v1",
         "api_key": "lm-studio"
@@ -18,7 +77,11 @@
         }
     },
     "prompts": {
-        "image_description": "请用中文详细描述这张图片的内容，包括场景、物体、颜色、人物、动作、可能的时间段以及任何能帮助理解图片的细节。只用中文回答，保持自然、连贯并尽量详细。",
+        "image_description_zh": "请用中文详细描述这张图片的内容，包括场景、物体、颜色、人物、动作、可能的时间段以及任何能帮助理解图片的细节。只用中文回答，保持自然、连载并尽量详细。",
+        "image_description_en": "Please describe in detail the content of this picture, including scene, objects, colors, people, actions, and any details that help understand the image.",
         "translation_system": "你是一个专业的翻译助手，擅长将文本从一种语言翻译到另一种语言，同时保持原文的含义、风格和细节。"
+    },
+    "ocr": {
+        "backend": "easyocr"
     }
 }

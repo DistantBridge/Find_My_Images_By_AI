@@ -1,0 +1,68 @@
+[
+    {
+        "key": "id",
+        "label": "ID",
+        "visible": true
+    },
+    {
+        "key": "image_name",
+        "label": "图片名称",
+        "visible": true
+    },
+    {
+        "key": "folder_short_name",
+        "label": "文件夹",
+        "visible": true
+    },
+    {
+        "key": "is_processed",
+        "label": "处理状态",
+        "visible": true
+    },
+    {
+        "key": "is_featured",
+        "label": "精选",
+        "visible": true
+    },
+    {
+        "key": "tags",
+        "label": "标签",
+        "visible": true
+    },
+    {
+        "key": "ocr_text",
+        "label": "OCR文本",
+        "visible": true,
+        "max_length": 20
+    },
+    {
+        "key": "ai_description_en",
+        "label": "AI描述（英文）",
+        "visible": true,
+        "max_length": 20
+    },
+    {
+        "key": "ai_description_zh",
+        "label": "AI描述（中文）",
+        "visible": true,
+        "max_length": 20
+    },
+    {
+        "key": "ai_description_zh_thinking",
+        "label": "AI描述（中文thinking）",
+        "visible": true,
+        "max_length": 20
+    },
+    {
+        "key": "ai_description_zh_v2",
+        "label": "AI描述（中文v2）",
+        "visible": true,
+        "max_length": 20
+    },
+    {
+        "key": "remark",
+        "label": "备注",
+        "visible": true,
+        "max_length": 20
+    }
+]

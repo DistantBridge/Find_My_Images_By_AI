@@ -7,18 +7,17 @@ channels:
 dependencies:
   - python=3.10
   - pip
-  # GPU 版 PyTorch（自带 CUDA 12.1 运行时）
-  - pytorch
-  - torchvision
-  - torchaudio
+  # PyTorch with CUDA 12.1 runtime. For CPU-only installs remove pytorch-cuda and add "cpuonly".
+  - pytorch=2.4
+  - torchvision=0.19
+  - torchaudio=2.4
   - pytorch-cuda=12.1
-  # 基础科学与图像
+  # Core scientific/runtime libs
   - numpy
   - pillow
   - pip:
-      - easyocr
-      - opencv-python-headless
-      - PyQt6
-      - mysql-connector-python
+      - easyocr>=1.7.1
+      - opencv-python-headless>=4.8
+      - PyQt6>=6.6
       - piexif
-      - openai
+      - openai>=1.50

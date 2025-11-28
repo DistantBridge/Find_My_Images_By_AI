@@ -1,0 +1,9 @@
+image_processing.log
+__pycache__/
+history/
+Tempdatabase/
+TempImage/
+TempImage2/
+TempImage3/
+TempImage4/
+old_data_base/

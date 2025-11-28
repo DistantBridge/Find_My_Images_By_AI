@@ -92,12 +92,15 @@ class ConfigLoader:
     def ensure_database_exists(self):
         """确保数据库文件存在，如果不存在则创建"""
         db_path = self.get_database_path()
-        
+        # 自动创建数据库文件夹
+        db_dir = os.path.dirname(db_path)
+        if db_dir and not os.path.exists(db_dir):
+            os.makedirs(db_dir, exist_ok=True)
+
         if not os.path.exists(db_path):
             # 创建数据库文件
             conn = sqlite3.connect(db_path)
             cursor = conn.cursor()
-            
             # 创建图片记录表
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS image_records (
@@ -110,6 +113,7 @@ class ConfigLoader:
                     alternate_paths TEXT,
                     ai_description_en TEXT,
                     ai_description_zh TEXT,
+                    ai_description_zh_thinking TEXT,
                     original_image_path TEXT,
                     remark TEXT,
                     processed_time TEXT,
@@ -173,6 +177,10 @@ class ConfigLoader:
                     cursor.execute("ALTER TABLE image_records ADD COLUMN md5 TEXT")
                 if 'sha256' not in cols:
                     cursor.execute("ALTER TABLE image_records ADD COLUMN sha256 TEXT")
+                if 'ai_description_zh_v2' not in cols:
+                    cursor.execute("ALTER TABLE image_records ADD COLUMN ai_description_zh_v2 TEXT")
+                if 'ai_description_zh_thinking' not in cols:
+                    cursor.execute("ALTER TABLE image_records ADD COLUMN ai_description_zh_thinking TEXT")
                 if 'alternate_paths' not in cols:
                     cursor.execute("ALTER TABLE image_records ADD COLUMN alternate_paths TEXT")
                 conn.commit()
@@ -181,6 +189,14 @@ class ConfigLoader:
                     cursor.execute("CREATE INDEX IF NOT EXISTS idx_image_hashes ON image_records(md5, sha256)")
                     conn.commit()
                 except Exception:
+                    pass
+                # 规范化已有哈希值：去除首尾空白并转小写，避免历史数据格式不一致导致匹配失败
+                try:
+                    cursor.execute("UPDATE image_records SET md5 = LOWER(TRIM(md5)) WHERE md5 IS NOT NULL AND md5 <> ''")
+                    cursor.execute("UPDATE image_records SET sha256 = LOWER(TRIM(sha256)) WHERE sha256 IS NOT NULL AND sha256 <> ''")
+                    conn.commit()
+                except Exception:
+                    # 忽略规范化错误
                     pass
                 cursor.close()
                 conn.close()
@@ -193,17 +209,90 @@ class ConfigLoader:
     def get_ai_models(self):
         """获取AI模型配置"""
         ai_config = self.get_ai_config()
-        return ai_config['models']
+        # 优先使用所选方案内的 models 覆盖（若存在）
+        try:
+            sel = self.get_selected_scheme()
+            if sel and isinstance(sel, dict):
+                models = sel.get('models')
+                if models:
+                    return models
+                # 特殊兜底：若当前方案是 en_only 且未单独配置 models，
+                # 尝试复用“英文生成”方案（通常是 old_en_then_translate）的模型，
+                # 避免退回到全局中文多模态模型导致英文模式调用错误。
+                if sel.get('key') == 'en_only':
+                    schemes = ai_config.get('schemes', {})
+                    for scheme in schemes.values():
+                        if isinstance(scheme, dict) and scheme.get('key') == 'old_en_then_translate':
+                            alt_models = scheme.get('models')
+                            if alt_models:
+                                return alt_models
+        except Exception:
+            pass
+        return ai_config.get('models', {})
     
     def get_ai_params(self):
         """获取AI参数配置"""
         ai_config = self.get_ai_config()
-        return ai_config['parameters']
+        # 优先使用所选方案内的 parameters 覆盖（若存在）
+        try:
+            sel = self.get_selected_scheme()
+            if sel and isinstance(sel, dict):
+                params = sel.get('parameters')
+                if params:
+                    return params
+                # 与 models 逻辑一致：en_only 方案缺少 parameters 时，
+                # 复用英文生成方案的参数（例如 llava 的温度等设置），避免使用中文方案参数。
+                if sel.get('key') == 'en_only':
+                    schemes = ai_config.get('schemes', {})
+                    for scheme in schemes.values():
+                        if isinstance(scheme, dict) and scheme.get('key') == 'old_en_then_translate':
+                            alt_params = scheme.get('parameters')
+                            if alt_params:
+                                return alt_params
+        except Exception:
+            pass
+        return ai_config.get('parameters', {})
     
     def get_ai_prompts(self):
         """获取AI提示词配置"""
         ai_config = self.get_ai_config()
-        return ai_config['prompts']
+        # 优先使用所选方案内的 prompts 覆盖（若存在）
+        try:
+            sel = self.get_selected_scheme()
+            if sel and isinstance(sel, dict) and 'prompts' in sel:
+                return sel['prompts']
+        except Exception:
+            pass
+        return ai_config.get('prompts', {})
+
+    def get_selected_scheme_id(self):
+        """返回当前选中的方案编号（字符串），兼容旧版的 description_mode"""
+        ai_cfg = self.get_ai_config()
+        # 新结构使用 selected_scheme（编号字符串）
+        sel = ai_cfg.get('selected_scheme')
+        if sel:
+            return str(sel)
+        # 向后兼容：老版使用 description_mode 的键名，尝试映射到 schemes
+        legacy = ai_cfg.get('description_mode')
+        if not legacy:
+            return None
+        # 如果 legacy 已经是数字字符串则直接返回
+        if isinstance(legacy, (int, str)) and str(legacy).isdigit():
+            return str(legacy)
+        # 否则尝试在 schemes 中匹配 key
+        schemes = ai_cfg.get('schemes', {})
+        for sid, s in schemes.items():
+            if s.get('key') == legacy or sid == str(legacy):
+                return sid
+        return None
+
+    def get_selected_scheme(self):
+        """返回选中方案的完整配置字典或 None"""
+        ai_cfg = self.get_ai_config()
+        sid = self.get_selected_scheme_id()
+        if not sid:
+            return None
+        return ai_cfg.get('schemes', {}).get(str(sid))
 
 # 全局配置加载器实例
 config_loader = ConfigLoader()
